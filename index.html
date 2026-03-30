@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sayan Cric18 — Live Streams</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050d18;
+            --surface: #0a1628;
+            --surface2: #0f1e35;
+            --gold: #f4b400;
+            --gold2: #ffcf47;
+            --red: #e8323a;
+            --green: #00e676;
+            --muted: #5a7190;
+            --text: #d4e4f7;
+            --text2: #8baac8;
+            --glow: rgba(244, 180, 0, 0.18);
+            --whatsapp: #25D366;
+            --telegram: #229ED9;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === ANIMATED BACKGROUND === */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-layer::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(ellipse, rgba(244,180,0,0.07) 0%, transparent 70%);
+            animation: driftA 18s ease-in-out infinite alternate;
+        }
+        .bg-layer::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 55%;
+            height: 55%;
+            background: radial-gradient(ellipse, rgba(0,120,255,0.06) 0%, transparent 70%);
+            animation: driftB 22s ease-in-out infinite alternate;
+        }
+        @keyframes driftA { from { transform: translate(0,0) scale(1); } to { transform: translate(4%,6%) scale(1.1); } }
+        @keyframes driftB { from { transform: translate(0,0) scale(1); } to { transform: translate(-5%,-4%) scale(1.08); } }
+
+        /* === HEADER === */
+        header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(244,180,0,0.12);
+            background: rgba(5,13,24,0.85);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-wrap {
+            position: relative;
+        }
+        .logo {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--gold), #e08000);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            color: #050d18;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(244,180,0,0.4), 0 4px 12px rgba(0,0,0,0.6);
+            transition: box-shadow 0.3s;
+        }
+        .logo:hover { box-shadow: 0 0 32px rgba(244,180,0,0.7), 0 4px 12px rgba(0,0,0,0.6); }
+        .pulse-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 14px;
+            border: 2px solid var(--gold);
+            opacity: 0;
+            animation: pulseRing 3s ease-out infinite;
+        }
+        @keyframes pulseRing {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.3); }
+        }
+
+        .brand-text h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            color: #fff;
+            line-height: 1;
+        }
+        .brand-text span {
+            font-size: 12px;
+            color: var(--text2);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(232,50,58,0.15);
+            border: 1px solid rgba(232,50,58,0.4);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ff5a60;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: blink 1.2s ease-in-out infinite;
+            box-shadow: 0 0 6px var(--red);
+        }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* WhatsApp button */
+        .wa-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--whatsapp), #128C7E);
+            border: none;
+            padding: 9px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+            text-decoration: none;
+        }
+        .wa-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55);
+        }
+        .wa-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* Telegram button */
+        .tg-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--telegram), #1a7bbf);
+            border: none;
+            padding: 9px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(34, 158, 217, 0.35);
+            text-decoration: none;
+        }
+        .tg-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 158, 217, 0.55);
+        }
+        .tg-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* === PLAYER SECTION === */
+        .player-section {
+            position: relative;
+            z-index: 5;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .player-card {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(244,180,0,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+        }
+
+        /* === CHANNEL BAR === */
+        .channel-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: var(--surface2);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .channel-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .channel-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1db954, #0d8c3e);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .channel-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+        }
+        .channel-sub {
+            font-size: 11px;
+            color: var(--text2);
+            letter-spacing: 0.5px;
+        }
+
+        /* === VIDEO WRAPPER === */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* === FULLSCREEN BUTTON === */
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            z-index: 20;
+            background: rgba(5, 13, 24, 0.75);
+            border: 1px solid rgba(244, 180, 0, 0.35);
+            color: var(--gold);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.22s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+        }
+        .fullscreen-btn:hover {
+            background: rgba(244, 180, 0, 0.18);
+            border-color: var(--gold);
+            box-shadow: 0 0 18px rgba(244,180,0,0.35), 0 4px 16px rgba(0,0,0,0.5);
+            transform: scale(1.1);
+        }
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.2s;
+        }
+        .fullscreen-btn:hover svg { transform: scale(1.08); }
+
+        .fullscreen-btn .icon-expand { display: block; }
+        .fullscreen-btn .icon-compress { display: none; }
+        .fullscreen-btn.is-fullscreen .icon-expand { display: none; }
+        .fullscreen-btn.is-fullscreen .icon-compress { display: block; }
+
+        .video-wrapper:-webkit-full-screen { padding-bottom: 0; height: 100%; }
+        .video-wrapper:-moz-full-screen    { padding-bottom: 0; height: 100%; }
+        .video-wrapper:fullscreen          { padding-bottom: 0; height: 100%; }
+        .video-wrapper:-webkit-full-screen iframe,
+        .video-wrapper:-moz-full-screen iframe,
+        .video-wrapper:fullscreen iframe {
+            position: static;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* === INFO STRIP === */
+        .info-strip {
+            display: flex;
+            gap: 16px;
+            padding: 14px 20px;
+            font-size: 13px;
+            color: var(--text2);
+            border-top: 1px solid rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-item svg { opacity: 0.6; }
+
+        /* === FOOTER === */
+        footer {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+            font-size: 12px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            letter-spacing: 0.5px;
+        }
+
+        /* === TICKER === */
+        .ticker-wrap {
+            overflow: hidden;
+            background: linear-gradient(90deg, var(--gold), #e08000);
+            padding: 7px 0;
+        }
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 30s linear infinite;
+        }
+        .ticker span {
+            color: #050d18;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 0 40px;
+            text-transform: uppercase;
+        }
+        @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        @media (max-width: 640px) {
+            header { padding: 14px 16px; gap: 8px; }
+            .brand-text h1 { font-size: 20px; }
+            .wa-btn span, .tg-btn span { display: none; }
+            .wa-btn, .tg-btn { padding: 9px 11px; }
+            .fullscreen-btn { bottom: 10px; right: 10px; width: 36px; height: 36px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- BG FX -->
+<div class="bg-layer"></div>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker">
+        <span>🏏 Sayan SS1 Hindi</span>
+        <span>⚡ HD Streaming Available</span>
+        <span>🏆 Live Matches 24/7</span>
+        <span>📱 Watch on Any Device</span>
+        <span>💬 Join WhatsApp for Updates</span>
+        <span>🏏 SS1 Hindi HD Live</span>
+        <span>⚡ HD Streaming Available</span>
+        <span>🏆 Live Matches 24/7</span>
+        <span>📱 Watch on Any Device</span>
+        <span>💬 Join WhatsApp for Updates</span>
+    </div>
+</div>
+
+<!-- HEADER -->
+<header>
+    <div class="brand">
+        <div class="logo-wrap">
+            <div class="logo">C365</div>
+            <div class="pulse-ring"></div>
+        </div>
+        <div class="brand-text">
+            <h1>SS1 by Sayan</h1>
+            <span>Live Stream Hub</span>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            Live
+        </div>
+
+        <!-- WhatsApp -->
+        <a href="https://whatsapp.com/channel/0029VbC2oQsC6ZvmwpR3v73v" target="_blank" rel="noopener" class="wa-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.471 1.338C15.513.455 13.258 0 10.899 0 4.921 0 .036 4.884.036 10.859c0 1.906.499 3.766 1.441 5.397L0 24l8.059-2.415c1.576.86 3.368 1.314 5.22 1.314 5.979 0 10.863-4.884 10.863-10.859 0-2.9-1.164-5.631-3.28-7.681zm-6.572 20.96c-1.627 0-3.224-.435-4.613-1.256l-.331-.196-3.438 1.029.978-3.569-.229-.363C1.578 15.73 1.06 13.338 1.06 10.859c0-4.922 4.008-8.927 8.935-8.927 2.383 0 4.623.927 6.308 2.609 1.684 1.681 2.611 3.923 2.611 6.306 0 4.922-4.008 8.927-8.935 8.927zm4.872-6.665c-.268-.134-1.581-.78-1.827-.869-.247-.088-.427-.134-.606.134-.179.268-.694.869-.851 1.048-.157.179-.315.201-.583.067-.268-.134-1.131-.415-2.154-1.326-.797-.711-1.335-1.591-1.493-1.859-.157-.268-.017-.413.118-.546.121-.121.268-.314.402-.471.134-.157.179-.268.268-.447.089-.179.045-.335-.022-.468-.067-.134-.606-1.459-.83-1.997-.218-.526-.438-.454-.606-.462-.157-.009-.335-.009-.514-.009-.179 0-.468.067-.714.335-.247.268-1.331 1.298-1.331 3.16 0 1.863 1.36 3.67 1.548 3.927.189.258 2.658 4.057 6.437 5.688.896.391 1.595.625 2.139.8.896.278 1.711.239 2.356.145.72-.107 2.215-.905 2.527-1.78.312-.876.312-1.626.218-1.78-.093-.156-.334-.25-.603-.384z"/>
+            </svg>
+            <span>WhatsApp</span>
+        </a>
+
+        <!-- Telegram -->
+        <a href="https://t.me/sayancric18" target="_blank" rel="noopener" class="tg-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+            <span>Telegram</span>
+        </a>
+    </div>
+</header>
+
+<!-- PLAYER SECTION -->
+<main class="player-section">
+    <div class="player-card">
+
+        <!-- Channel Bar -->
+        <div class="channel-bar">
+            <div class="channel-label">
+                <div class="channel-icon">🏏</div>
+                <div>
+                    <div class="channel-name">Star Sport 1 Hindi</div>
+                    <div class="channel-sub">Live HD Stream</div>
+                </div>
+            </div>
+            <div class="live-badge" style="font-size:11px;">
+                <div class="live-dot"></div>
+                On Air
+            </div>
+        </div>
+
+        <!-- Video -->
+        <div class="video-wrapper" id="video-wrapper">
+            <iframe id="cricket-video" src="https://shwe7ank-jeeyo.netlify.app/watch.html?id=1108" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
+
+            <!-- Fullscreen Button -->
+            <button class="fullscreen-btn" id="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen" aria-label="Toggle fullscreen">
+                <svg class="icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 3 21 3 21 9"/>
+                    <polyline points="9 21 3 21 3 15"/>
+                    <line x1="21" y1="3" x2="14" y2="10"/>
+                    <line x1="3" y1="21" x2="10" y2="14"/>
+                </svg>
+                <svg class="icon-compress" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 14 10 14 10 20"/>
+                    <polyline points="20 10 14 10 14 4"/>
+                    <line x1="10" y1="14" x2="3" y2="21"/>
+                    <line x1="21" y1="3" x2="14" y2="10"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Info Strip -->
+        <div class="info-strip">
+            <div class="info-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                24/7 Live
+            </div>
+            <div class="info-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6s4-2 11-2 11 2 11 2v13s-4-2-11-2-11 2-11 2V6z"/></svg>
+                Willow Cricket
+            </div>
+            <div class="info-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                HD Available
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    &copy; <span id="year"></span> Cricket365 — All rights reserved by Sayan
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('year').textContent = new Date().getFullYear();
+    });
+
+    const wrapper = document.getElementById('video-wrapper');
+    const fsBtn   = document.getElementById('fullscreen-btn');
+
+    function toggleFullscreen() {
+        const isFs = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        );
+        if (!isFs) {
+            const req = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen || wrapper.mozRequestFullScreen || wrapper.msRequestFullscreen;
+            if (req) req.call(wrapper);
+        } else {
+            const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+            if (exit) exit.call(document);
+        }
+    }
+
+    function onFsChange() {
+        const isFs = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        );
+        fsBtn.classList.toggle('is-fullscreen', isFs);
+        fsBtn.title = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+        fsBtn.setAttribute('aria-label', isFs ? 'Exit fullscreen' : 'Toggle fullscreen');
+    }
+
+    document.addEventListener('fullscreenchange',       onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    document.addEventListener('mozfullscreenchange',    onFsChange);
+    document.addEventListener('MSFullscreenChange',     onFsChange);
+
+    wrapper.addEventListener('dblclick', function(e) {
+        if (!e.target.closest('.fullscreen-btn')) toggleFullscreen();
+    });
+</script>
+</body>
+</html>
