@@ -314,6 +314,7 @@
         .fullscreen-btn.is-fullscreen .icon-expand { display: none; }
         .fullscreen-btn.is-fullscreen .icon-compress { display: block; }
 
+        /* === NATIVE FULLSCREEN (desktop) === */
         .video-wrapper:-webkit-full-screen { padding-bottom: 0; height: 100%; }
         .video-wrapper:-moz-full-screen    { padding-bottom: 0; height: 100%; }
         .video-wrapper:fullscreen          { padding-bottom: 0; height: 100%; }
@@ -323,6 +324,57 @@
             position: static;
             width: 100%;
             height: 100%;
+        }
+
+        /* === FAKE FULLSCREEN for mobile (when native FS is blocked) === */
+        .video-wrapper.fake-fs {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            padding-bottom: 0 !important;
+            z-index: 9999 !important;
+            border-radius: 0 !important;
+        }
+        .video-wrapper.fake-fs iframe {
+            position: absolute !important;
+            top: 0; left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* === ROTATE OVERLAY (portrait fake-fs hint) === */
+        .rotate-hint {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(5,13,24,0.96);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: var(--gold);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 2px;
+            pointer-events: none;
+            animation: fadeHint 0.3s ease;
+        }
+        .rotate-hint.show { display: flex; }
+        .rotate-hint svg {
+            width: 64px;
+            height: 64px;
+            animation: spinPhone 1.2s ease-in-out forwards;
+        }
+        @keyframes spinPhone {
+            0%   { transform: rotate(0deg); }
+            60%  { transform: rotate(90deg) scale(1.1); }
+            100% { transform: rotate(90deg); }
+        }
+        @keyframes fadeHint {
+            from { opacity: 0; } to { opacity: 1; }
         }
 
         /* === INFO STRIP === */
@@ -389,6 +441,19 @@
 
 <!-- BG FX -->
 <div class="bg-layer"></div>
+
+<!-- ROTATE HINT OVERLAY -->
+<div class="rotate-hint" id="rotate-hint" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2"/>
+        <path d="M9 22h6"/>
+        <path d="M12 18h.01"/>
+        <!-- rotation arrows -->
+        <path d="M2 10 A10 10 0 0 1 12 2" stroke="var(--gold)" stroke-width="1.4"/>
+        <polyline points="1 6 2 10 6 9" stroke="var(--gold)" stroke-width="1.4"/>
+    </svg>
+    Rotate for Fullscreen
+</div>
 
 <!-- TICKER -->
 <div class="ticker-wrap" aria-hidden="true">
@@ -490,7 +555,7 @@
             </div>
             <div class="info-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6s4-2 11-2 11 2 11 2v13s-4-2-11-2-11 2-11 2V6z"/></svg>
-                Star Sport 1 HIndi HD
+                Star Sport 1 Hindi HD
             </div>
             <div class="info-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -503,7 +568,7 @@
 
 <!-- FOOTER -->
 <footer>
-    &copy; <span id="year"></span>  All rights reserved by Sayan
+    &copy; <span id="year"></span> All rights reserved by Sayan
 </footer>
 
 <script>
@@ -511,35 +576,119 @@
         document.getElementById('year').textContent = new Date().getFullYear();
     });
 
-    const wrapper = document.getElementById('video-wrapper');
-    const fsBtn   = document.getElementById('fullscreen-btn');
+    const wrapper   = document.getElementById('video-wrapper');
+    const fsBtn     = document.getElementById('fullscreen-btn');
+    const rotHint   = document.getElementById('rotate-hint');
+    const isMobile  = () => /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let fakeFsActive = false;
+    let hintTimer    = null;
 
-    function toggleFullscreen() {
-        const isFs = !!(
-            document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement
-        );
-        if (!isFs) {
-            const req = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen || wrapper.mozRequestFullScreen || wrapper.msRequestFullscreen;
-            if (req) req.call(wrapper);
-        } else {
-            const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-            if (exit) exit.call(document);
+    /* ── helpers ── */
+    function isPortrait() {
+        if (screen.orientation) return screen.orientation.type.startsWith('portrait');
+        return window.innerHeight > window.innerWidth;
+    }
+
+    function lockLandscape() {
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
         }
     }
 
+    function unlockOrientation() {
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
+    }
+
+    function showRotateHint() {
+        rotHint.classList.add('show');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => rotHint.classList.remove('show'), 2500);
+    }
+
+    /* ── enter fake fullscreen (mobile fallback) ── */
+    function enterFakeFs() {
+        fakeFsActive = true;
+        wrapper.classList.add('fake-fs');
+        fsBtn.classList.add('is-fullscreen');
+        fsBtn.title = 'Exit Fullscreen';
+        fsBtn.setAttribute('aria-label', 'Exit fullscreen');
+        document.body.style.overflow = 'hidden';
+
+        // Try to lock landscape; show hint if still portrait after a moment
+        lockLandscape();
+        setTimeout(() => {
+            if (isPortrait()) showRotateHint();
+        }, 400);
+    }
+
+    /* ── exit fake fullscreen ── */
+    function exitFakeFs() {
+        fakeFsActive = false;
+        wrapper.classList.remove('fake-fs');
+        fsBtn.classList.remove('is-fullscreen');
+        fsBtn.title = 'Fullscreen';
+        fsBtn.setAttribute('aria-label', 'Toggle fullscreen');
+        document.body.style.overflow = '';
+        unlockOrientation();
+        rotHint.classList.remove('show');
+        clearTimeout(hintTimer);
+    }
+
+    /* ── main toggle ── */
+    function toggleFullscreen() {
+        const nativeFsEl = document.fullscreenElement ||
+                           document.webkitFullscreenElement ||
+                           document.mozFullScreenElement ||
+                           document.msFullscreenElement;
+
+        if (nativeFsEl) {
+            /* exit native fullscreen */
+            (document.exitFullscreen ||
+             document.webkitExitFullscreen ||
+             document.mozCancelFullScreen ||
+             document.msExitFullscreen).call(document);
+        } else if (fakeFsActive) {
+            exitFakeFs();
+        } else {
+            /* try native fullscreen first */
+            const req = wrapper.requestFullscreen ||
+                        wrapper.webkitRequestFullscreen ||
+                        wrapper.mozRequestFullScreen ||
+                        wrapper.msRequestFullscreen;
+
+            if (req) {
+                req.call(wrapper).then(() => {
+                    /* native FS granted — also lock landscape on mobile */
+                    if (isMobile()) lockLandscape();
+                }).catch(() => {
+                    /* native FS blocked (common on mobile) — use fake FS */
+                    enterFakeFs();
+                });
+            } else {
+                /* no native FS API at all */
+                enterFakeFs();
+            }
+        }
+    }
+
+    /* ── sync button state with native FS changes ── */
     function onFsChange() {
-        const isFs = !!(
-            document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement
-        );
-        fsBtn.classList.toggle('is-fullscreen', isFs);
-        fsBtn.title = isFs ? 'Exit Fullscreen' : 'Fullscreen';
-        fsBtn.setAttribute('aria-label', isFs ? 'Exit fullscreen' : 'Toggle fullscreen');
+        const isFs = !!(document.fullscreenElement ||
+                        document.webkitFullscreenElement ||
+                        document.mozFullScreenElement ||
+                        document.msFullscreenElement);
+
+        fsBtn.classList.toggle('is-fullscreen', isFs || fakeFsActive);
+        fsBtn.title = (isFs || fakeFsActive) ? 'Exit Fullscreen' : 'Fullscreen';
+        fsBtn.setAttribute('aria-label', (isFs || fakeFsActive) ? 'Exit fullscreen' : 'Toggle fullscreen');
+
+        if (isFs && isMobile()) {
+            lockLandscape();
+            setTimeout(() => { if (isPortrait()) showRotateHint(); }, 400);
+        }
+        if (!isFs) unlockOrientation();
     }
 
     document.addEventListener('fullscreenchange',       onFsChange);
@@ -547,9 +696,24 @@
     document.addEventListener('mozfullscreenchange',    onFsChange);
     document.addEventListener('MSFullscreenChange',     onFsChange);
 
+    /* ── double-tap to toggle ── */
     wrapper.addEventListener('dblclick', function(e) {
         if (!e.target.closest('.fullscreen-btn')) toggleFullscreen();
     });
+
+    /* ── hide rotate hint when user actually rotates ── */
+    window.addEventListener('orientationchange', () => {
+        if (!isPortrait()) rotHint.classList.remove('show');
+    });
+    screen.orientation && screen.orientation.addEventListener('change', () => {
+        if (!isPortrait()) rotHint.classList.remove('show');
+    });
+
+    /* ── exit fake FS on back button (Android) ── */
+    window.addEventListener('popstate', () => {
+        if (fakeFsActive) exitFakeFs();
+    });
+    if (fakeFsActive === false) history.pushState(null, '');
 </script>
 </body>
 </html>
